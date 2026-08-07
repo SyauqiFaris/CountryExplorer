@@ -61,7 +61,13 @@ Aplikasi ini konsumsi [REST Countries API v5](https://restcountries.com/). **Cat
 
 3. Buka `src/environments/environment.keys.ts` yang baru dibuat, lalu ganti isi `apiKey` dengan key asli kamu.
 
-4. **Penting**: buka dashboard key kamu di https://restcountries.com/api-keys, lalu tambahkan `http://localhost:4200` ke **CORS allowed origins** untuk key tersebut. Tanpa langkah ini, request dari browser akan ditolak dengan error `"Origin is not allowed for this API key"` meski key-nya valid — API key REST Countries v5 memvalidasi origin permintaan, bukan cuma validitas key-nya saja.
+4. **Penting**: atur CORS allowed origins untuk key kamu:
+   1. Buka https://restcountries.com/api-keys
+   2. Klik tombol **Edit** pada key yang kamu pakai
+   3. Di kolom CORS allowed origins, masukkan `localhost` (hostname polos — **tanpa** `http://` dan tanpa port)
+   4. Simpan
+
+   Tanpa langkah ini, request dari browser akan ditolak dengan error `"Origin is not allowed for this API key"` meski key-nya valid.
 
 ### 3. Jalankan dev server
 
