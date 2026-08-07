@@ -52,6 +52,7 @@ Aplikasi ini konsumsi [REST Countries API v5](https://restcountries.com/). **Cat
 1. Daftar gratis di https://restcountries.com/sign-up (tanpa kartu kredit, kuota 500 request/bulan)
 2. Copy `src/environments/environment.keys.example.ts` menjadi `src/environments/environment.keys.ts`
 3. Isi `apiKey` di file tersebut dengan key asli kamu — file ini sudah masuk `.gitignore`, tidak akan ikut ter-commit
+4. **Penting**: buka dashboard key kamu di https://restcountries.com/api-keys, lalu tambahkan `http://localhost:4200` ke **CORS allowed origins** untuk key tersebut. Tanpa langkah ini, request dari browser akan ditolak dengan error `"Origin is not allowed for this API key"` meski key-nya valid — API key REST Countries v5 memvalidasi origin permintaan, bukan cuma validitas key-nya saja.
 
 ### 3. Jalankan dev server
 
