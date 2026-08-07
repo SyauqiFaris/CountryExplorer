@@ -1,0 +1,21 @@
+<a
+  [routerLink]="['/countries', country().cca3]"
+  class="group block overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200 transition hover:shadow-md hover:ring-slate-300 dark:bg-slate-800 dark:ring-slate-700 dark:hover:ring-slate-600"
+>
+  <img
+    [src]="country().flags.svg"
+    [alt]="'Bendera ' + country().name.common"
+    loading="lazy"
+    class="h-36 w-full object-cover"
+  />
+
+  <div class="space-y-1 p-4">
+    <h2 class="truncate font-semibold text-slate-900 dark:text-slate-100">
+      {{ country().name.common }}
+    </h2>
+    <p class="text-sm text-slate-500 dark:text-slate-400">{{ country().region }}</p>
+    <p class="text-sm text-slate-500 dark:text-slate-400">
+      Populasi: {{ country().population | number }}
+    </p>
+  </div>
+</a>
