@@ -1,1 +1,97 @@
-<p>country-detail works!</p>
+<main class="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+  <a
+    routerLink="/countries"
+    class="mb-6 inline-flex items-center gap-1 text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+  >
+    &larr; Kembali ke daftar negara
+  </a>
+
+  @if (state(); as s) {
+    @switch (s.status) {
+      @case ('loading') {
+        <div class="flex items-center justify-center gap-3 py-24 text-slate-500 dark:text-slate-400">
+          <span
+            class="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600 dark:border-slate-600 dark:border-t-slate-300"
+          ></span>
+          <span>Memuat detail negara...</span>
+        </div>
+      }
+      @case ('error') {
+        <div
+          class="rounded-lg bg-red-50 px-4 py-8 text-center text-red-700 dark:bg-red-950 dark:text-red-300"
+        >
+          {{ s.message }}
+        </div>
+      }
+      @case ('success') {
+        <article
+          class="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700"
+        >
+          <img
+            [src]="s.data.flags.svg"
+            [alt]="'Bendera ' + s.data.name.common"
+            class="h-48 w-full object-cover"
+          />
+
+          <div class="space-y-4 p-6">
+            <div>
+              <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                {{ s.data.name.common }}
+              </h1>
+              <p class="text-sm text-slate-500 dark:text-slate-400">{{ s.data.name.official }}</p>
+            </div>
+
+            <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <dt class="text-sm font-medium text-slate-500 dark:text-slate-400">Ibu kota</dt>
+                <dd class="text-slate-900 dark:text-slate-100">
+                  {{ s.data.capital?.join(', ') || '-' }}
+                </dd>
+              </div>
+              <div>
+                <dt class="text-sm font-medium text-slate-500 dark:text-slate-400">Region</dt>
+                <dd class="text-slate-900 dark:text-slate-100">{{ s.data.region }}</dd>
+              </div>
+              <div>
+                <dt class="text-sm font-medium text-slate-500 dark:text-slate-400">Populasi</dt>
+                <dd class="text-slate-900 dark:text-slate-100">{{ s.data.population | number }}</dd>
+              </div>
+              <div>
+                <dt class="text-sm font-medium text-slate-500 dark:text-slate-400">Luas wilayah</dt>
+                <dd class="text-slate-900 dark:text-slate-100">
+                  {{ s.data.area ? (s.data.area | number) + ' km²' : '-' }}
+                </dd>
+              </div>
+              <div>
+                <dt class="text-sm font-medium text-slate-500 dark:text-slate-400">Bahasa</dt>
+                <dd class="text-slate-900 dark:text-slate-100">{{ languageList(s.data) }}</dd>
+              </div>
+              <div>
+                <dt class="text-sm font-medium text-slate-500 dark:text-slate-400">Mata uang</dt>
+                <dd class="text-slate-900 dark:text-slate-100">{{ currencyList(s.data) }}</dd>
+              </div>
+            </dl>
+
+            @if (s.data.borders?.length) {
+              <div>
+                <dt class="mb-2 text-sm font-medium text-slate-500 dark:text-slate-400">
+                  Negara perbatasan
+                </dt>
+                <div class="flex flex-wrap gap-2">
+                  @for (border of s.data.borders; track border) {
+                    <a
+                      [routerLink]="['/countries', border]"
+                      class="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
+                    >
+                      {{ border }}
+                    </a>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </article>
+      }
+    }
+  }
+</main>
