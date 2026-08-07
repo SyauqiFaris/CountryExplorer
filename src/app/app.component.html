@@ -1,1 +1,50 @@
+<header class="border-b border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
+  <nav class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+    <a routerLink="/countries" class="text-lg font-bold text-slate-900 dark:text-slate-100">
+      Country Explorer
+    </a>
+
+    <div class="flex items-center gap-4">
+      <a
+        routerLink="/countries"
+        routerLinkActive="text-slate-900 dark:text-slate-100 font-semibold"
+        class="text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+      >
+        Daftar Negara
+      </a>
+      <a
+        routerLink="/favorites"
+        routerLinkActive="text-slate-900 dark:text-slate-100 font-semibold"
+        class="text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+      >
+        Favorit
+      </a>
+
+      <button
+        type="button"
+        (click)="themeService.toggle()"
+        [attr.aria-pressed]="themeService.isDarkMode()"
+        aria-label="Ganti tampilan gelap/terang"
+        class="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700"
+      >
+        @if (themeService.isDarkMode()) {
+          <svg viewBox="0 0 24 24" class="h-5 w-5" fill="currentColor">
+            <path
+              d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-5.4-5.4c0-1.68.83-3.18 2.1-4.1-.4-.06-.8-.1-1.2-.1z"
+            />
+          </svg>
+        } @else {
+          <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="4" />
+            <path
+              stroke-linecap="round"
+              d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32 1.41-1.41"
+            />
+          </svg>
+        }
+      </button>
+    </div>
+  </nav>
+</header>
+
 <router-outlet />

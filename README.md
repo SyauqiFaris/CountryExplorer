@@ -1,67 +1,89 @@
-# CountryExplorer
+# Country Explorer
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.20.
+Aplikasi frontend untuk menjelajahi data negara-negara di dunia — cari berdasarkan nama, filter berdasarkan region, lihat detail lengkap tiap negara, dan simpan negara favorit. Dibangun dengan Angular 21 (standalone components, signals, zoneless) dan Tailwind CSS v4, murni frontend tanpa backend sendiri.
 
-## Setup API key
+## Screenshot
 
-Aplikasi ini konsumsi [REST Countries API v5](https://restcountries.com/), yang mewajibkan API key gratis (versi lama v3.1 sudah dimatikan per Agustus 2026).
+| Daftar negara | Detail negara |
+|---|---|
+| ![Daftar negara](docs/screenshots/countries-list.jpg) | ![Detail negara](docs/screenshots/country-detail.jpg) |
+
+| Favorit | Dark mode |
+|---|---|
+| ![Halaman favorit](docs/screenshots/favorites.jpg) | ![Dark mode](docs/screenshots/dark-mode.jpg) |
+
+## Fitur
+
+- **Daftar negara** — card grid berisi bendera, nama, region, dan populasi
+- **Search & filter** — cari berdasarkan nama (debounce 300ms) dan/atau filter berdasarkan region, keduanya bisa dipakai bersamaan
+- **Detail negara** — bendera, nama resmi, ibu kota, populasi, luas wilayah, bahasa, mata uang, dan daftar negara perbatasan yang bisa diklik
+- **Favorit** — toggle simpan/hapus favorit di tiap card, halaman khusus buat lihat semua favorit, tersimpan permanen di `localStorage`
+- **Dark mode** — toggle manual di header, tersimpan di `localStorage`, default tetap light saat pertama kali dibuka
+- **Responsive** — grid dan layout menyesuaikan dari mobile sampai desktop
+- **Transisi halaman** — animasi fade singkat antar route pakai native View Transition API browser
+
+## Tech stack
+
+- **Angular 21** — standalone components, signals, zoneless change detection
+- **TypeScript**
+- **RxJS** — `debounceTime`, `distinctUntilChanged`, `switchMap`, `combineLatest`
+- **Angular Router** — lazy-loaded routes, `withComponentInputBinding()`, `withViewTransitions()`
+- **Tailwind CSS v4** — utility-first styling, dark mode via `class` strategy
+- **REST Countries API v5** — sumber data negara
+- **Karma + Jasmine** — unit testing
+
+## Prasyarat
+
+- Node.js `^22.22.3` atau `>=24.0.0` (dikembangkan dan diuji di Node 24.12)
+- npm
+
+## Setup
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Setup API key
+
+Aplikasi ini konsumsi [REST Countries API v5](https://restcountries.com/). **Catatan penting**: versi lama API (v3.1) yang biasanya dipakai secara publik tanpa API key sudah dimatikan total per Agustus 2026 — semua endpoint-nya kini mengembalikan error deprecation. Versi penggantinya (v5) mewajibkan API key, meski tetap gratis untuk pemakaian personal/evaluasi.
 
 1. Daftar gratis di https://restcountries.com/sign-up (tanpa kartu kredit, kuota 500 request/bulan)
 2. Copy `src/environments/environment.keys.example.ts` menjadi `src/environments/environment.keys.ts`
-3. Isi `apiKey` di file tersebut dengan key asli kamu — file ini sudah di-gitignore, tidak akan ikut ter-commit
+3. Isi `apiKey` di file tersebut dengan key asli kamu — file ini sudah masuk `.gitignore`, tidak akan ikut ter-commit
 
-## Development server
-
-To start a local development server, run:
+### 3. Jalankan dev server
 
 ```bash
-ng serve
+npm start
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Buka `http://localhost:4200/` di browser.
 
-## Code scaffolding
+## Command reference
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+| Command | Keterangan |
+|---|---|
+| `npm start` | Jalankan dev server (`ng serve`) |
+| `npm run build` | Build production ke folder `dist/` |
+| `npm test` | Jalankan unit test (Karma + Jasmine) |
 
-```bash
-ng generate component component-name
+## Struktur project
+
+```
+src/app/
+├── core/services/          # CountryService, FavoriteService, ThemeService
+├── features/countries/     # Halaman: country-list, country-detail, country-favorites
+├── shared/
+│   ├── components/         # country-card, search-bar (reusable)
+│   └── models/             # Country, LoadState
+└── app.routes.ts
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Setiap pemanggilan HTTP ke REST Countries API wajib lewat `CountryService` — komponen tidak pernah inject `HttpClient` langsung. Setiap halaman yang fetch data menangani 3 state secara eksplisit: loading, error, dan empty.
 
-```bash
-ng generate --help
-```
+## Catatan teknis
 
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io/) test runner (Jasmine specs), use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- **Kenapa v5, bukan v3.1?** REST Countries v3.1 sudah dinonaktifkan total sejak Agustus 2026. Response mentah v5 juga berbeda jauh strukturnya dari v3.1 — `CountryService` yang memetakan shape v5 ke model `Country` yang lebih ringkas dan stabil, jadi seluruh komponen di app ini tidak pernah tahu soal detail response API mentah.
+- **Kenapa perlu API key kalau katanya "public API"?** Itu benar untuk v3.1 (sudah mati). v5 mewajibkan `Authorization: Bearer <key>` di setiap request. Tidak ada cara lain untuk mengonsumsi data negara secara live tanpa key.
