@@ -100,6 +100,24 @@ describe('CountryService', () => {
       expect(result[0].borders).toBeUndefined();
     });
 
+    it('should filter out countries with no ISO alpha_3 code (disputed/unrecognized territories)', () => {
+      let result: any[] = [];
+      service.getAll().subscribe((countries) => (result = countries));
+
+      httpMock.expectOne((r) => r.urlWithParams.startsWith(environment.apiBaseUrl)).flush({
+        data: {
+          objects: [
+            rawCountry({ names: { common: 'Abkhazia', official: 'Abkhazia' }, codes: { alpha_3: '' } }),
+            rawCountry({ codes: { alpha_3: 'IDN' } }),
+          ],
+          meta: meta(2),
+        },
+      });
+
+      expect(result.length).toBe(1);
+      expect(result[0].cca3).toBe('IDN');
+    });
+
     it('should follow pagination and combine all pages when meta.more is true', () => {
       let result: any[] = [];
       service.getAll().subscribe((countries) => (result = countries));

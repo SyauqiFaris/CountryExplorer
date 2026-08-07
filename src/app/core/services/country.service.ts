@@ -97,7 +97,12 @@ export class CountryService {
         return meta.more ? fetchPage(meta.offset + meta.count) : EMPTY;
       }),
       reduce<RestCountriesV5Response, Country[]>(
-        (acc, response) => [...acc, ...response.data.objects.map((raw) => this.mapToCountry(raw))],
+        (acc, response) => [
+          ...acc,
+          ...response.data.objects
+            .filter((raw) => raw.codes.alpha_3)
+            .map((raw) => this.mapToCountry(raw)),
+        ],
         [],
       ),
     );
