@@ -43,6 +43,9 @@ __screenshots__/
 .DS_Store
 Thumbs.db
 
+# API keys — jangan ikut commit, isi sendiri dari environment.keys.example.ts
+src/environments/environment.keys.ts
+
 # AI tooling — internal only, jangan ikut commit
 CLAUDE.md
 PRD.md

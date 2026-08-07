@@ -2,6 +2,14 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.20.
 
+## Setup API key
+
+Aplikasi ini konsumsi [REST Countries API v5](https://restcountries.com/), yang mewajibkan API key gratis (versi lama v3.1 sudah dimatikan per Agustus 2026).
+
+1. Daftar gratis di https://restcountries.com/sign-up (tanpa kartu kredit, kuota 500 request/bulan)
+2. Copy `src/environments/environment.keys.example.ts` menjadi `src/environments/environment.keys.ts`
+3. Isi `apiKey` di file tersebut dengan key asli kamu — file ini sudah di-gitignore, tidak akan ikut ter-commit
+
 ## Development server
 
 To start a local development server, run:
@@ -38,7 +46,7 @@ This will compile your project and store the build artifacts in the `dist/` dire
 
 ## Running unit tests
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+To execute unit tests with the [Karma](https://karma-runner.github.io/) test runner (Jasmine specs), use the following command:
 
 ```bash
 ng test

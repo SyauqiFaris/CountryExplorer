@@ -1,0 +1,1 @@
+export const apiKey = 'PASTE_YOUR_RESTCOUNTRIES_V5_API_KEY_HERE';

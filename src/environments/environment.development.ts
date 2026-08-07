@@ -1,4 +1,7 @@
+import { apiKey } from './environment.keys';
+
 export const environment = {
   production: false,
-  apiBaseUrl: 'https://restcountries.com/v3.1',
+  apiBaseUrl: 'https://api.restcountries.com/countries/v5',
+  apiKey,
 };
