@@ -1,21 +1,46 @@
-<a
-  [routerLink]="['/countries', country().cca3]"
-  class="group block overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200 transition hover:shadow-md hover:ring-slate-300 dark:bg-slate-800 dark:ring-slate-700 dark:hover:ring-slate-600"
+<div
+  class="group relative overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200 transition hover:shadow-md hover:ring-slate-300 dark:bg-slate-800 dark:ring-slate-700 dark:hover:ring-slate-600"
 >
-  <img
-    [src]="country().flags.svg"
-    [alt]="'Bendera ' + country().name.common"
-    loading="lazy"
-    class="h-36 w-full object-cover"
-  />
+  <button
+    type="button"
+    (click)="onToggleFavorite()"
+    [attr.aria-pressed]="isFavorite()"
+    [attr.aria-label]="
+      (isFavorite() ? 'Hapus dari favorit: ' : 'Tambah ke favorit: ') + country().name.common
+    "
+    class="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-red-500 shadow transition hover:bg-white dark:bg-slate-900/80 dark:hover:bg-slate-900"
+  >
+    <svg
+      viewBox="0 0 24 24"
+      class="h-5 w-5"
+      [attr.fill]="isFavorite() ? 'currentColor' : 'none'"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+      />
+    </svg>
+  </button>
 
-  <div class="space-y-1 p-4">
-    <h2 class="truncate font-semibold text-slate-900 dark:text-slate-100">
-      {{ country().name.common }}
-    </h2>
-    <p class="text-sm text-slate-500 dark:text-slate-400">{{ country().region }}</p>
-    <p class="text-sm text-slate-500 dark:text-slate-400">
-      Populasi: {{ country().population | number }}
-    </p>
-  </div>
-</a>
+  <a [routerLink]="['/countries', country().cca3]" class="block">
+    <img
+      [src]="country().flags.svg"
+      [alt]="'Bendera ' + country().name.common"
+      loading="lazy"
+      class="h-36 w-full object-cover"
+    />
+
+    <div class="space-y-1 p-4">
+      <h2 class="truncate font-semibold text-slate-900 dark:text-slate-100">
+        {{ country().name.common }}
+      </h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400">{{ country().region }}</p>
+      <p class="text-sm text-slate-500 dark:text-slate-400">
+        Populasi: {{ country().population | number }}
+      </p>
+    </div>
+  </a>
+</div>
