@@ -1,6 +1,6 @@
-import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, catchError, map, of, throwError } from 'rxjs';
+import { EMPTY, Observable, expand, map, reduce } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { Country } from '../../shared/models/country.model';
@@ -26,11 +26,22 @@ interface RestCountriesV5Country {
   };
 }
 
+interface RestCountriesV5Meta {
+  total: number;
+  count: number;
+  limit: number;
+  offset: number;
+  more: boolean;
+}
+
 interface RestCountriesV5Response {
   data: {
     objects: RestCountriesV5Country[];
+    meta: RestCountriesV5Meta;
   };
 }
+
+const PAGE_SIZE = 100;
 
 @Injectable({
   providedIn: 'root',
@@ -45,25 +56,23 @@ export class CountryService {
   constructor(private readonly http: HttpClient) {}
 
   getAll(): Observable<Country[]> {
-    const url = `${environment.apiBaseUrl}/all?fields=names,flag,population,region,capitals`;
-    return this.fetchCountries(url);
+    const url = `${environment.apiBaseUrl}?response_fields=names.common,names.official,flag.url_png,flag.url_svg,population,region,capitals.name`;
+    return this.fetchAllPages(url);
   }
 
   getByName(name: string): Observable<Country[]> {
-    const url = `${environment.apiBaseUrl}/name/${encodeURIComponent(name)}`;
-    return this.fetchCountries(url).pipe(
-      catchError((error: HttpErrorResponse) => (error.status === 404 ? of([]) : throwError(() => error))),
-    );
+    const url = `${environment.apiBaseUrl}/name?q=${encodeURIComponent(name)}`;
+    return this.fetchAllPages(url);
   }
 
   getByRegion(region: string): Observable<Country[]> {
     const url = `${environment.apiBaseUrl}/region/${encodeURIComponent(region)}`;
-    return this.fetchCountries(url);
+    return this.fetchAllPages(url);
   }
 
   getByCode(code: string): Observable<Country> {
-    const url = `${environment.apiBaseUrl}/alpha/${encodeURIComponent(code)}`;
-    return this.fetchCountries(url).pipe(
+    const url = `${environment.apiBaseUrl}/codes.alpha_3/${encodeURIComponent(code.toUpperCase())}`;
+    return this.fetchAllPages(url).pipe(
       map((countries) => {
         const country = countries[0];
         if (!country) {
@@ -74,10 +83,24 @@ export class CountryService {
     );
   }
 
-  private fetchCountries(url: string): Observable<Country[]> {
-    return this.http
-      .get<RestCountriesV5Response>(url, this.httpOptions)
-      .pipe(map((response) => response.data.objects.map((raw) => this.mapToCountry(raw))));
+  private fetchAllPages(baseUrl: string): Observable<Country[]> {
+    const pageUrl = (offset: number) => {
+      const separator = baseUrl.includes('?') ? '&' : '?';
+      return `${baseUrl}${separator}limit=${PAGE_SIZE}&offset=${offset}`;
+    };
+    const fetchPage = (offset: number) =>
+      this.http.get<RestCountriesV5Response>(pageUrl(offset), this.httpOptions);
+
+    return fetchPage(0).pipe(
+      expand((response) => {
+        const { meta } = response.data;
+        return meta.more ? fetchPage(meta.offset + meta.count) : EMPTY;
+      }),
+      reduce<RestCountriesV5Response, Country[]>(
+        (acc, response) => [...acc, ...response.data.objects.map((raw) => this.mapToCountry(raw))],
+        [],
+      ),
+    );
   }
 
   private mapToCountry(raw: RestCountriesV5Country): Country {

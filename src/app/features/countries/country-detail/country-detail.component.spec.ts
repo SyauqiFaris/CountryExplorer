@@ -22,6 +22,10 @@ function rawCountry(overrides: Partial<Record<string, unknown>> = {}) {
   };
 }
 
+function paged(objects: unknown[]) {
+  return { data: { objects, meta: { total: objects.length, count: objects.length, limit: 100, offset: 0, more: false } } };
+}
+
 describe('CountryDetailComponent', () => {
   let component: CountryDetailComponent;
   let fixture: ComponentFixture<CountryDetailComponent>;
@@ -48,15 +52,15 @@ describe('CountryDetailComponent', () => {
     expect(component).toBeTruthy();
     await fixture.whenStable();
     httpMock
-      .expectOne((r) => r.url.startsWith(`${environment.apiBaseUrl}/alpha/IDN`))
-      .flush({ data: { objects: [rawCountry()] } });
+      .expectOne((r) => r.urlWithParams.startsWith(`${environment.apiBaseUrl}/codes.alpha_3/IDN`))
+      .flush(paged([rawCountry()]));
   });
 
   it('should render country detail fields', async () => {
     await fixture.whenStable();
     httpMock
-      .expectOne((r) => r.url.startsWith(`${environment.apiBaseUrl}/alpha/IDN`))
-      .flush({ data: { objects: [rawCountry()] } });
+      .expectOne((r) => r.urlWithParams.startsWith(`${environment.apiBaseUrl}/codes.alpha_3/IDN`))
+      .flush(paged([rawCountry()]));
     await fixture.whenStable();
     fixture.detectChanges();
 
@@ -73,8 +77,8 @@ describe('CountryDetailComponent', () => {
   it('should render border countries as clickable links using their raw code', async () => {
     await fixture.whenStable();
     httpMock
-      .expectOne((r) => r.url.startsWith(`${environment.apiBaseUrl}/alpha/IDN`))
-      .flush({ data: { objects: [rawCountry()] } });
+      .expectOne((r) => r.urlWithParams.startsWith(`${environment.apiBaseUrl}/codes.alpha_3/IDN`))
+      .flush(paged([rawCountry()]));
     await fixture.whenStable();
     fixture.detectChanges();
 
@@ -88,8 +92,8 @@ describe('CountryDetailComponent', () => {
   it('should show an error message when the country is not found', async () => {
     await fixture.whenStable();
     httpMock
-      .expectOne((r) => r.url.startsWith(`${environment.apiBaseUrl}/alpha/IDN`))
-      .flush({ data: { objects: [] } });
+      .expectOne((r) => r.urlWithParams.startsWith(`${environment.apiBaseUrl}/codes.alpha_3/IDN`))
+      .flush(paged([]));
     await fixture.whenStable();
     fixture.detectChanges();
 
@@ -99,8 +103,8 @@ describe('CountryDetailComponent', () => {
   it('should re-fetch when the code input changes (border country navigation)', async () => {
     await fixture.whenStable();
     httpMock
-      .expectOne((r) => r.url.startsWith(`${environment.apiBaseUrl}/alpha/IDN`))
-      .flush({ data: { objects: [rawCountry()] } });
+      .expectOne((r) => r.urlWithParams.startsWith(`${environment.apiBaseUrl}/codes.alpha_3/IDN`))
+      .flush(paged([rawCountry()]));
     await fixture.whenStable();
     fixture.detectChanges();
 
@@ -108,12 +112,12 @@ describe('CountryDetailComponent', () => {
     await fixture.whenStable();
 
     httpMock
-      .expectOne((r) => r.url.startsWith(`${environment.apiBaseUrl}/alpha/MYS`))
-      .flush({
-        data: {
-          objects: [rawCountry({ names: { common: 'Malaysia', official: 'Malaysia' }, codes: { alpha_3: 'MYS' } })],
-        },
-      });
+      .expectOne((r) => r.urlWithParams.startsWith(`${environment.apiBaseUrl}/codes.alpha_3/MYS`))
+      .flush(
+        paged([
+          rawCountry({ names: { common: 'Malaysia', official: 'Malaysia' }, codes: { alpha_3: 'MYS' } }),
+        ]),
+      );
     await fixture.whenStable();
     fixture.detectChanges();
 

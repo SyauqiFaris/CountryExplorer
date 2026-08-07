@@ -21,6 +21,10 @@ function rawCountry(overrides: Partial<Record<string, unknown>> = {}) {
   };
 }
 
+function meta(count: number, offset = 0, total = count, more = false) {
+  return { total, count, limit: 100, offset, more };
+}
+
 describe('CountryService', () => {
   let service: CountryService;
   let httpMock: HttpTestingController;
@@ -38,14 +42,18 @@ describe('CountryService', () => {
   });
 
   describe('getAll', () => {
-    it('should request /all with the field filter and the Bearer token', () => {
+    it('should request the base endpoint with response_fields and the Bearer token', () => {
       service.getAll().subscribe();
 
       const req = httpMock.expectOne(
-        `${environment.apiBaseUrl}/all?fields=names,flag,population,region,capitals`,
+        (r) =>
+          r.urlWithParams.startsWith(environment.apiBaseUrl) &&
+          r.urlWithParams.includes('response_fields=names.common') &&
+          r.urlWithParams.includes('limit=100') &&
+          r.urlWithParams.includes('offset=0'),
       );
       expect(req.request.headers.get('Authorization')).toBe(`Bearer ${environment.apiKey}`);
-      req.flush({ data: { objects: [rawCountry()] } });
+      req.flush({ data: { objects: [rawCountry()], meta: meta(1) } });
     });
 
     it('should map a fully-populated raw country to the Country shape', () => {
@@ -53,8 +61,8 @@ describe('CountryService', () => {
       service.getAll().subscribe((countries) => (result = countries));
 
       httpMock
-        .expectOne((r) => r.url.startsWith(`${environment.apiBaseUrl}/all`))
-        .flush({ data: { objects: [rawCountry()] } });
+        .expectOne((r) => r.urlWithParams.startsWith(environment.apiBaseUrl))
+        .flush({ data: { objects: [rawCountry()], meta: meta(1) } });
 
       expect(result).toEqual([
         {
@@ -76,15 +84,14 @@ describe('CountryService', () => {
       let result: any[] = [];
       service.getAll().subscribe((countries) => (result = countries));
 
-      httpMock
-        .expectOne((r) => r.url.startsWith(`${environment.apiBaseUrl}/all`))
-        .flush({
-          data: {
-            objects: [
-              rawCountry({ capitals: [], area: undefined, languages: [], currencies: [], borders: [] }),
-            ],
-          },
-        });
+      httpMock.expectOne((r) => r.urlWithParams.startsWith(environment.apiBaseUrl)).flush({
+        data: {
+          objects: [
+            rawCountry({ capitals: [], area: undefined, languages: [], currencies: [], borders: [] }),
+          ],
+          meta: meta(1),
+        },
+      });
 
       expect(result[0].capital).toBeUndefined();
       expect(result[0].area).toBeUndefined();
@@ -92,18 +99,44 @@ describe('CountryService', () => {
       expect(result[0].currencies).toBeUndefined();
       expect(result[0].borders).toBeUndefined();
     });
+
+    it('should follow pagination and combine all pages when meta.more is true', () => {
+      let result: any[] = [];
+      service.getAll().subscribe((countries) => (result = countries));
+
+      httpMock
+        .expectOne((r) => r.urlWithParams.includes('offset=0'))
+        .flush({
+          data: {
+            objects: [rawCountry({ codes: { alpha_3: 'IDN' } })],
+            meta: meta(1, 0, 2, true),
+          },
+        });
+
+      httpMock
+        .expectOne((r) => r.urlWithParams.includes('offset=1'))
+        .flush({
+          data: {
+            objects: [rawCountry({ names: { common: 'Japan', official: 'Japan' }, codes: { alpha_3: 'JPN' } })],
+            meta: meta(1, 1, 2, false),
+          },
+        });
+
+      expect(result.map((c) => c.cca3)).toEqual(['IDN', 'JPN']);
+    });
   });
 
   describe('getByName', () => {
-    it('should request /name/{name}', () => {
+    it('should request /name?q={name}', () => {
       service.getByName('indonesia').subscribe();
 
-      const req = httpMock.expectOne(`${environment.apiBaseUrl}/name/indonesia`);
-      expect(req.request.method).toBe('GET');
-      req.flush({ data: { objects: [rawCountry()] } });
+      const req = httpMock.expectOne((r) =>
+        r.urlWithParams.startsWith(`${environment.apiBaseUrl}/name?q=indonesia`),
+      );
+      req.flush({ data: { objects: [rawCountry()], meta: meta(1) } });
     });
 
-    it('should emit an empty array (not an error) when the API returns 404', () => {
+    it('should emit an empty array (not an error) when the API finds no match', () => {
       let result: unknown[] | undefined;
       let errored = false;
       service.getByName('doesnotexist').subscribe({
@@ -112,14 +145,14 @@ describe('CountryService', () => {
       });
 
       httpMock
-        .expectOne((r) => r.url.startsWith(`${environment.apiBaseUrl}/name/`))
-        .flush('not found', { status: 404, statusText: 'Not Found' });
+        .expectOne((r) => r.urlWithParams.startsWith(`${environment.apiBaseUrl}/name?q=`))
+        .flush({ data: { objects: [], meta: meta(0) } });
 
       expect(result).toEqual([]);
       expect(errored).toBeFalse();
     });
 
-    it('should propagate non-404 errors', () => {
+    it('should propagate server errors', () => {
       let errored = false;
       service.getByName('indonesia').subscribe({
         next: () => {},
@@ -127,7 +160,7 @@ describe('CountryService', () => {
       });
 
       httpMock
-        .expectOne((r) => r.url.startsWith(`${environment.apiBaseUrl}/name/`))
+        .expectOne((r) => r.urlWithParams.startsWith(`${environment.apiBaseUrl}/name?q=`))
         .flush('server error', { status: 500, statusText: 'Server Error' });
 
       expect(errored).toBeTrue();
@@ -138,19 +171,23 @@ describe('CountryService', () => {
     it('should request /region/{region}', () => {
       service.getByRegion('Asia').subscribe();
 
-      const req = httpMock.expectOne(`${environment.apiBaseUrl}/region/Asia`);
+      const req = httpMock.expectOne((r) =>
+        r.urlWithParams.startsWith(`${environment.apiBaseUrl}/region/Asia`),
+      );
       expect(req.request.method).toBe('GET');
-      req.flush({ data: { objects: [rawCountry()] } });
+      req.flush({ data: { objects: [rawCountry()], meta: meta(1) } });
     });
   });
 
   describe('getByCode', () => {
-    it('should request /alpha/{code} and return the single mapped country', () => {
+    it('should request /codes.alpha_3/{code} in uppercase and return the single mapped country', () => {
       let result: unknown;
-      service.getByCode('IDN').subscribe((country) => (result = country));
+      service.getByCode('idn').subscribe((country) => (result = country));
 
-      const req = httpMock.expectOne(`${environment.apiBaseUrl}/alpha/IDN`);
-      req.flush({ data: { objects: [rawCountry()] } });
+      const req = httpMock.expectOne((r) =>
+        r.urlWithParams.startsWith(`${environment.apiBaseUrl}/codes.alpha_3/IDN`),
+      );
+      req.flush({ data: { objects: [rawCountry()], meta: meta(1) } });
 
       expect((result as { cca3: string }).cca3).toBe('IDN');
     });
@@ -163,8 +200,8 @@ describe('CountryService', () => {
       });
 
       httpMock
-        .expectOne((r) => r.url.startsWith(`${environment.apiBaseUrl}/alpha/ZZZ`))
-        .flush({ data: { objects: [] } });
+        .expectOne((r) => r.urlWithParams.startsWith(`${environment.apiBaseUrl}/codes.alpha_3/ZZZ`))
+        .flush({ data: { objects: [], meta: meta(0) } });
 
       expect(errored).toBeTrue();
     });

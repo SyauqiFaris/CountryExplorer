@@ -19,6 +19,10 @@ function rawCountry(name: string, code: string) {
   };
 }
 
+function paged(objects: unknown[]) {
+  return { data: { objects, meta: { total: objects.length, count: objects.length, limit: 100, offset: 0, more: false } } };
+}
+
 describe('CountryFavoritesComponent', () => {
   let component: CountryFavoritesComponent;
   let fixture: ComponentFixture<CountryFavoritesComponent>;
@@ -50,17 +54,15 @@ describe('CountryFavoritesComponent', () => {
     createComponent();
     expect(component).toBeTruthy();
     await fixture.whenStable();
-    httpMock.expectOne((r) => r.url.startsWith(`${environment.apiBaseUrl}/all`)).flush({
-      data: { objects: [] },
-    });
+    httpMock.expectOne((r) => r.urlWithParams.startsWith(environment.apiBaseUrl)).flush(paged([]));
   });
 
   it('should show an informative empty state when there are no favorites', async () => {
     createComponent();
     await fixture.whenStable();
     httpMock
-      .expectOne((r) => r.url.startsWith(`${environment.apiBaseUrl}/all`))
-      .flush({ data: { objects: [rawCountry('Indonesia', 'IDN')] } });
+      .expectOne((r) => r.urlWithParams.startsWith(environment.apiBaseUrl))
+      .flush(paged([rawCountry('Indonesia', 'IDN')]));
     await fixture.whenStable();
     fixture.detectChanges();
 
@@ -71,11 +73,9 @@ describe('CountryFavoritesComponent', () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(['IDN']));
     createComponent();
     await fixture.whenStable();
-    httpMock.expectOne((r) => r.url.startsWith(`${environment.apiBaseUrl}/all`)).flush({
-      data: {
-        objects: [rawCountry('Indonesia', 'IDN'), rawCountry('Japan', 'JPN')],
-      },
-    });
+    httpMock
+      .expectOne((r) => r.urlWithParams.startsWith(environment.apiBaseUrl))
+      .flush(paged([rawCountry('Indonesia', 'IDN'), rawCountry('Japan', 'JPN')]));
     await fixture.whenStable();
     fixture.detectChanges();
 
@@ -89,8 +89,8 @@ describe('CountryFavoritesComponent', () => {
     createComponent();
     await fixture.whenStable();
     httpMock
-      .expectOne((r) => r.url.startsWith(`${environment.apiBaseUrl}/all`))
-      .flush({ data: { objects: [rawCountry('Indonesia', 'IDN')] } });
+      .expectOne((r) => r.urlWithParams.startsWith(environment.apiBaseUrl))
+      .flush(paged([rawCountry('Indonesia', 'IDN')]));
     await fixture.whenStable();
     fixture.detectChanges();
 

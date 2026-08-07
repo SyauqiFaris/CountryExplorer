@@ -21,6 +21,10 @@ function rawCountry(name: string, region: string, code: string) {
   };
 }
 
+function paged(objects: unknown[]) {
+  return { data: { objects, meta: { total: objects.length, count: objects.length, limit: 100, offset: 0, more: false } } };
+}
+
 describe('CountryListComponent', () => {
   let component: CountryListComponent;
   let fixture: ComponentFixture<CountryListComponent>;
@@ -45,15 +49,13 @@ describe('CountryListComponent', () => {
   it('should create', async () => {
     expect(component).toBeTruthy();
     await fixture.whenStable();
-    httpMock
-      .expectOne((r) => r.url.startsWith(`${environment.apiBaseUrl}/all`))
-      .flush({ data: { objects: [] } });
+    httpMock.expectOne((r) => r.urlWithParams.startsWith(environment.apiBaseUrl)).flush(paged([]));
   });
 
   it('should render country cards when the API returns data', async () => {
     await fixture.whenStable();
-    const req = httpMock.expectOne((r) => r.url.startsWith(`${environment.apiBaseUrl}/all`));
-    req.flush({ data: { objects: [rawCountry('Indonesia', 'Asia', 'IDN')] } });
+    const req = httpMock.expectOne((r) => r.urlWithParams.startsWith(environment.apiBaseUrl));
+    req.flush(paged([rawCountry('Indonesia', 'Asia', 'IDN')]));
     await fixture.whenStable();
     fixture.detectChanges();
 
@@ -62,8 +64,8 @@ describe('CountryListComponent', () => {
 
   it('should show empty state message when the API returns no countries', async () => {
     await fixture.whenStable();
-    const req = httpMock.expectOne((r) => r.url.startsWith(`${environment.apiBaseUrl}/all`));
-    req.flush({ data: { objects: [] } });
+    const req = httpMock.expectOne((r) => r.urlWithParams.startsWith(environment.apiBaseUrl));
+    req.flush(paged([]));
     await fixture.whenStable();
     fixture.detectChanges();
 
@@ -72,7 +74,7 @@ describe('CountryListComponent', () => {
 
   it('should show an error message when the request fails', async () => {
     await fixture.whenStable();
-    const req = httpMock.expectOne((r) => r.url.startsWith(`${environment.apiBaseUrl}/all`));
+    const req = httpMock.expectOne((r) => r.urlWithParams.startsWith(environment.apiBaseUrl));
     req.flush('server error', { status: 500, statusText: 'Server Error' });
     await fixture.whenStable();
     fixture.detectChanges();
@@ -82,9 +84,7 @@ describe('CountryListComponent', () => {
 
   it('should call getByName when the user types a search term', async () => {
     await fixture.whenStable();
-    httpMock
-      .expectOne((r) => r.url.startsWith(`${environment.apiBaseUrl}/all`))
-      .flush({ data: { objects: [] } });
+    httpMock.expectOne((r) => r.urlWithParams.startsWith(environment.apiBaseUrl)).flush(paged([]));
     await fixture.whenStable();
     fixture.detectChanges();
 
@@ -93,8 +93,8 @@ describe('CountryListComponent', () => {
     input.dispatchEvent(new Event('input'));
     await wait(400);
 
-    const req = httpMock.expectOne((r) => r.url.startsWith(`${environment.apiBaseUrl}/name/indonesia`));
-    req.flush({ data: { objects: [rawCountry('Indonesia', 'Asia', 'IDN')] } });
+    const req = httpMock.expectOne((r) => r.urlWithParams.startsWith(`${environment.apiBaseUrl}/name`));
+    req.flush(paged([rawCountry('Indonesia', 'Asia', 'IDN')]));
     await fixture.whenStable();
     fixture.detectChanges();
 
@@ -103,9 +103,7 @@ describe('CountryListComponent', () => {
 
   it('should call getByRegion when the user selects a region', async () => {
     await fixture.whenStable();
-    httpMock
-      .expectOne((r) => r.url.startsWith(`${environment.apiBaseUrl}/all`))
-      .flush({ data: { objects: [] } });
+    httpMock.expectOne((r) => r.urlWithParams.startsWith(environment.apiBaseUrl)).flush(paged([]));
     await fixture.whenStable();
     fixture.detectChanges();
 
@@ -114,8 +112,8 @@ describe('CountryListComponent', () => {
     select.dispatchEvent(new Event('change'));
     await fixture.whenStable();
 
-    const req = httpMock.expectOne((r) => r.url.startsWith(`${environment.apiBaseUrl}/region/Asia`));
-    req.flush({ data: { objects: [rawCountry('Japan', 'Asia', 'JPN')] } });
+    const req = httpMock.expectOne((r) => r.urlWithParams.startsWith(`${environment.apiBaseUrl}/region/Asia`));
+    req.flush(paged([rawCountry('Japan', 'Asia', 'JPN')]));
     await fixture.whenStable();
     fixture.detectChanges();
 
@@ -124,9 +122,7 @@ describe('CountryListComponent', () => {
 
   it('should combine search term and region filter (AND) client-side', async () => {
     await fixture.whenStable();
-    httpMock
-      .expectOne((r) => r.url.startsWith(`${environment.apiBaseUrl}/all`))
-      .flush({ data: { objects: [] } });
+    httpMock.expectOne((r) => r.urlWithParams.startsWith(environment.apiBaseUrl)).flush(paged([]));
     await fixture.whenStable();
     fixture.detectChanges();
 
@@ -135,12 +131,8 @@ describe('CountryListComponent', () => {
     input.dispatchEvent(new Event('input'));
     await wait(400);
 
-    const nameReq = httpMock.expectOne((r) => r.url.startsWith(`${environment.apiBaseUrl}/name/in`));
-    nameReq.flush({
-      data: {
-        objects: [rawCountry('Indonesia', 'Asia', 'IDN'), rawCountry('India', 'Asia', 'IND')],
-      },
-    });
+    const nameReq = httpMock.expectOne((r) => r.urlWithParams.startsWith(`${environment.apiBaseUrl}/name`));
+    nameReq.flush(paged([rawCountry('Indonesia', 'Asia', 'IDN'), rawCountry('India', 'Asia', 'IND')]));
     await fixture.whenStable();
     fixture.detectChanges();
 
@@ -150,12 +142,8 @@ describe('CountryListComponent', () => {
     await fixture.whenStable();
 
     // Region change re-triggers the same name search (combineLatest), not a region-only fetch.
-    const combinedReq = httpMock.expectOne((r) => r.url.startsWith(`${environment.apiBaseUrl}/name/in`));
-    combinedReq.flush({
-      data: {
-        objects: [rawCountry('Indonesia', 'Asia', 'IDN'), rawCountry('Ireland', 'Europe', 'IRL')],
-      },
-    });
+    const combinedReq = httpMock.expectOne((r) => r.urlWithParams.startsWith(`${environment.apiBaseUrl}/name`));
+    combinedReq.flush(paged([rawCountry('Indonesia', 'Asia', 'IDN'), rawCountry('Ireland', 'Europe', 'IRL')]));
     await fixture.whenStable();
     fixture.detectChanges();
 
