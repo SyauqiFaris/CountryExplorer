@@ -56,7 +56,7 @@ export class CountryService {
   constructor(private readonly http: HttpClient) {}
 
   getAll(): Observable<Country[]> {
-    const url = `${environment.apiBaseUrl}?response_fields=names.common,names.official,flag.url_png,flag.url_svg,population,region,capitals.name`;
+    const url = `${environment.apiBaseUrl}?response_fields=names.common,names.official,flag.url_png,flag.url_svg,population,region,capitals.name,codes.alpha_3`;
     return this.fetchAllPages(url);
   }
 
