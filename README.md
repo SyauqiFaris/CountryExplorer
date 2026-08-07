@@ -50,8 +50,17 @@ npm install
 Aplikasi ini konsumsi [REST Countries API v5](https://restcountries.com/). **Catatan penting**: versi lama API (v3.1) yang biasanya dipakai secara publik tanpa API key sudah dimatikan total per Agustus 2026 — semua endpoint-nya kini mengembalikan error deprecation. Versi penggantinya (v5) mewajibkan API key, meski tetap gratis untuk pemakaian personal/evaluasi.
 
 1. Daftar gratis di https://restcountries.com/sign-up (tanpa kartu kredit, kuota 500 request/bulan)
-2. Copy `src/environments/environment.keys.example.ts` menjadi `src/environments/environment.keys.ts`
-3. Isi `apiKey` di file tersebut dengan key asli kamu — file ini sudah masuk `.gitignore`, tidak akan ikut ter-commit
+
+2. Buat file konfigurasi lokal dengan **meng-copy** (bukan rename) template yang sudah tersedia di repo ini:
+
+   ```bash
+   cp src/environments/environment.keys.example.ts src/environments/environment.keys.ts
+   ```
+
+   File template `environment.keys.example.ts` **biarkan tetap ada** — itu file yang ikut ter-commit di repo, berfungsi sebagai contoh untuk siapapun yang clone project ini nantinya. File hasil copy, `environment.keys.ts`, sudah otomatis diabaikan git (lihat `.gitignore`), jadi aman diisi API key asli tanpa risiko ke-commit.
+
+3. Buka `src/environments/environment.keys.ts` yang baru dibuat, lalu ganti isi `apiKey` dengan key asli kamu.
+
 4. **Penting**: buka dashboard key kamu di https://restcountries.com/api-keys, lalu tambahkan `http://localhost:4200` ke **CORS allowed origins** untuk key tersebut. Tanpa langkah ini, request dari browser akan ditolak dengan error `"Origin is not allowed for this API key"` meski key-nya valid — API key REST Countries v5 memvalidasi origin permintaan, bukan cuma validitas key-nya saja.
 
 ### 3. Jalankan dev server
