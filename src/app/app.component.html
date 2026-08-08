@@ -1,7 +1,19 @@
 <header class="border-b border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
   <nav class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-    <a routerLink="/countries" class="text-lg font-bold text-slate-900 dark:text-slate-100">
-      Country Explorer
+    <a routerLink="/countries" class="flex items-center gap-2">
+      <span
+        class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-sm"
+      >
+        <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="9" />
+          <path stroke-linecap="round" d="M3 12h18M12 3c2.5 2.5 3.75 5.5 3.75 9s-1.25 6.5-3.75 9c-2.5-2.5-3.75-5.5-3.75-9S9.5 5.5 12 3z" />
+        </svg>
+      </span>
+      <span
+        class="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400"
+      >
+        Country Explorer
+      </span>
     </a>
 
     <div class="flex items-center gap-4">
