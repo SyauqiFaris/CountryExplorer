@@ -53,6 +53,8 @@ Aplikasi ini konsumsi [REST Countries API v5](https://restcountries.com/). **Cat
 
 2. Buat file konfigurasi lokal dengan **meng-copy** (bukan rename) template yang sudah tersedia di repo ini:
 
+   > **Tips:** Jalankan command ini dari root folder project (folder yang ada `package.json`-nya). Kalau baru selesai clone dan belum `cd` ke folder project, command `cp` di bawah bakal gagal dengan error `No such file or directory`.
+
    ```bash
    cp src/environments/environment.keys.example.ts src/environments/environment.keys.ts
    ```
